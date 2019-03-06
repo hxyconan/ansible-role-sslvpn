@@ -1,5 +1,5 @@
 ## Intro
-This project includes configuration management scripts to create SoftEther VPN server and configure a SSL-VPN service running on port TCP 443.
+This Ansible role will create SoftEther VPN server and configure a SSL-VPN service running on port TCP 443.
 
 ## SoftEther and SSL-VPN
 - SoftEther supports unlimited VPN sessions and various of VPN protocols including:
@@ -90,7 +90,7 @@ you will be asked to enter an administrator password for the new virtual hub
     Static Routing Table to Push   |
     The command completed successfully.
     ```
-    Replace the `x` in `10.0.x.1` for your circumstance.
+    Replace the `10.0.x.1` value for your circumstance.
 
 - You might need to reboot your `sslvpn.service` for above changes
 - Also, you could use [VPN Server Manager GUI tool](https://www.softether.org/4-docs/1-manual/2._SoftEther_VPN_Essential_Architecture/2.4_VPN_Server_Manager) to setup NAT Gateway and DHCP
@@ -128,25 +128,24 @@ you will be asked to enter an administrator password for the new virtual hub
 
 - The certificate can be download and added as trusted in VPN client.
 
-### Download configuration for OpenVPN Client
+### 8. Download configuration for OpenVPN Client
 - Using configuration file to setup OpenVPN client is easier than manually
-
     ```
     VPN Server/[VIRTUAL_HUB_NAME]> OpenVpnMakeConfig ~/my_openvpn_client_config.zip
     ```
 Unzip it you will find `x_openvpn_remote_access_l3.ovpn` file. Review this ovpn file and update: 
-    * Replacing the dynamic generated `x.y.softether.net` domain.
+- Replacing the dynamic generated `x.y.softether.net` domain.
     ```
     remote [YOUR_VPN_YOUR_HOST_COMMON_NAME_OR_IP_ADDRESS] 443
     ```
-    * Update the `proto udp` to `probe tcp` since "[Any TCP ports which are defined as listeners on the VPN server accepts OpenVPN Protocol respectively and equally](https://www.vpnusers.com/viewtopic.php?t=5638)"
+- Update the `proto udp` to `probe tcp` since "[Any TCP ports which are defined as listeners on the VPN server accepts OpenVPN Protocol respectively and equally](https://www.vpnusers.com/viewtopic.php?t=5638)"
     ```
     proto tcp
     ```
 
 
 ## OpenVPN Client in MacOSX
-- Download and install `OpenVPN Connect Client` for MacOSX at: [Connecting to Access Server with macOS](https://openvpn.net/vpn-server-resources/connecting-to-access-server-with-macos/)
+- Download and install `OpenVPN Connect Client` for MacOSX from: [Connecting to Access Server with macOS](https://openvpn.net/vpn-server-resources/connecting-to-access-server-with-macos/)
 - Click task bar icon `Import/From local file...` to import your `x_openvpn_remote_access_l3.ovpn` given by VPN server administrator
 - Connect to the new VPN, input your username as <b>`"[USERNAME]@[VIRTUAL_HUB_NAME]"`</b> and password
 - Accept the 'Untrusted Certificate warning' if you use a self-signed ceritificate
@@ -154,8 +153,9 @@ Unzip it you will find `x_openvpn_remote_access_l3.ovpn` file. Review this ovpn 
 
 
 ## TODO
-- CA Signed SSL certificate
-- Install CA signed SSL certificate renew 
+- Request CA sign it the certificate
+- Generate a formal certificate and certificate request via OpenSSL
+- Install CA signed SSL certificate to SSL-VPN server 
 - Automate above manual steps
 
 

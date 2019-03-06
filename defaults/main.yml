@@ -1,0 +1,5 @@
+---
+se_version: v4.28-9669-beta-2018.09.11
+se_prefix: /usr/local
+
+custom_service_name: "sslvpn"

@@ -1,0 +1,16 @@
+# Script in /etc/systemd/system/{{ custom_service_name }}.service as {{ custom_service_name }} upstart service
+# Ref: https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description={{ custom_service_name }} daemon service
+
+[Service]
+User=root
+Type=forking
+ExecStart={{ se_prefix }}/vpnserver/vpnserver start
+ExecStop={{ se_prefix }}/vpnserver/vpnserver stop
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias={{ custom_service_name }}.service

@@ -1,0 +1,71 @@
+---
+# Prepare and install package
+- name: install dependent packages
+  apt: "name={{ item }} state=present"
+  with_items:
+    - build-essential
+
+- name: download softether sources
+  get_url:
+    url: http://www.softether-download.com/files/softether/{{ se_version }}-tree/Linux/SoftEther_VPN_Server/64bit_-_Intel_x64_or_AMD64/softether-vpnserver-{{ se_version }}-linux-x64-64bit.tar.gz
+    dest: /tmp/softether-vpnserver-{{ se_version }}-linux-x64-64bit.tar.gz
+  register: download
+
+- name: unarchive
+  unarchive:
+    src: /tmp/softether-vpnserver-{{ se_version }}-linux-x64-64bit.tar.gz
+    dest: "{{ se_prefix }}"
+    copy: no
+  when: download.changed
+  register: unarchive
+
+- name: make
+  shell: yes 1 | make
+  args:
+    chdir: "{{ se_prefix }}/vpnserver"
+  when: unarchive.changed
+  register: make
+
+- name: change files permission
+  file:
+    path: "{{ item.name }}"
+    mode: "{{ item.mode }}"
+    recurse: "{{ item.recurse }}"
+  with_items:
+     - { name: "{{ se_prefix }}/vpnserver", mode: 600, recurse: yes } 
+     - { name: "{{ se_prefix }}/vpnserver/vpnserver", mode: 700, recurse: no } 
+     - { name: "{{ se_prefix }}/vpnserver/vpncmd", mode: 700, recurse: no } 
+  when: make.changed
+
+
+# Create a daemon service and auto start enable
+- name: check if custom service enabled the auto-start for system reboot
+  command: systemctl is-enabled {{ custom_service_name }}.service
+  register: custom_service_autostart_stat
+  ignore_errors: yes
+
+- debug: msg="{{custom_service_autostart_stat.stdout}}"
+
+- file:
+    path: /usr/lib/systemd/system
+    state: directory
+    mode: 0755
+  when: custom_service_autostart_stat.stdout != "enabled"
+
+- name: Prepare the custom service init file in /usr/lib/systemd/system/ folder
+  template:
+    src: "templates/{{ custom_service_name }}.service.j2"
+    dest: "/usr/lib/systemd/system/{{ custom_service_name }}.service"
+    mode: 0755
+  when: custom_service_autostart_stat.stdout != "enabled"
+
+# this will enable auto start after reboot via create
+- name: Make sure the custom service can be started after reboot
+  command: systemctl enable {{ custom_service_name }}.service
+  when: custom_service_autostart_stat.stdout != "enabled"
+
+# systemd ansible module not available for ansible < 2.2, therefore, using command module instead
+- name: Reload and restart the daemon via command
+  command: systemctl daemon-reload
+  notify: restart {{ custom_service_name }}
+

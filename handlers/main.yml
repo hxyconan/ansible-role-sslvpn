@@ -1,0 +1,4 @@
+---
+# handlers
+- name: restart {{ custom_service_name }}
+  service: name={{ custom_service_name }} state=restarted
